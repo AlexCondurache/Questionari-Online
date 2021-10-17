@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block pagebody %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<br>
+<br>
+<div class="row">
+    <form class="col s12 m10 l8 offset-m1 offset-l2 purple darken-3 z-depth-4">
+
+        {% if title %}
+        <h3 class="orange-text text-darken-3 center">{{ title }}</h3>
+        {% endif %}
+
+        {% if id %}
+        <h6 class="center white-text">survey #{{ id }}</h6>
+        {% endif %}
+
+        {% if questionList %}
+        <br>
+        <div class="collection">
+            {% for question in questionList %}
+            {% set currentQuestion = loop.index0 %}
+            <a class="collection-item white-text grey darken-4">{{ question.text }}<label
+                    class="right teal-text text-lighten-3">
+                {% if question.type == 1 or question.type == 2 %}
+                {% if question.type == 1 %}
+                <img class="white" src="{{ url_for('static',filename='images/single_answer.svg') }}">
+                {% else %}
+                <img class="white" src="{{ url_for('static',filename='images/multiple_answer.svg') }}">
+                {% endif %}
+            </label></a>
+            <script type="text/javascript">
+
+                      google.charts.load('current', {'packages':['corechart']});
+                      google.charts.setOnLoadCallback(drawChart);
+
+                      function drawChart() {
+                        var data = new google.visualization.DataTable();
+                        data.addColumn('string', 'Topping');
+                        data.addColumn('number', 'Slices');
+                        data.addRows([
+                          {% for a in answerList[loop.index0] %}
+                            ['{{ a[0] }}', {{ a[1] }}],
+                          {% endfor %}
+                        ]);
+
+                        var options = {'width':600,
+                                       'height':300};
+
+                        var chart = new google.visualization.PieChart(document.getElementById('chart_div{{ currentQuestion }}'));
+                        chart.draw(data, options);
+                      }
+
+
+            </script>
+
+            <a>
+                <div class="section center white" id="chart_div{{ currentQuestion }}"></div>
+            </a>
+            {% elif question.type == 3 %}
+            <img class="white" src="{{ url_for('static',filename='images/text_answer.svg') }}">
+            <a>
+                {% for a in answerList[loop.index0] %}
+                <div class="section center white black-text"> {{ a }}</div>
+                <div class="divider"></div>
+                {% endfor %}
+            </a>
+            {% elif question.type == 4 or question.type == 5 %}
+            {% if question.type == 4 %}
+            <img class="white" src="{{ url_for('static',filename='images/date_answer.svg') }}">
+            {% else %}
+            <img class="white" src="{{ url_for('static',filename='images/time_answer.svg') }}">
+            {% endif %}
+            <script type="text/javascript">
+
+                      google.charts.load('current', {'packages':['bar']});
+                      google.charts.setOnLoadCallback(drawChart);
+
+                      function drawChart() {
+                        var data = new google.visualization.arrayToDataTable([
+                          ['Date', 'Occurrency'],
+                          {% for a in answerList[loop.index0] %}
+                            ['{{ a[0] }}', {{ a[1] }}],
+                          {% endfor %}
+                        ]);
+
+                        var options = {
+                          width: 600,
+                          legend: { position: 'none' },
+                          bars: 'horizontal',
+                          axes: {
+                            x: {
+                              0: { side: 'top', label: 'Percentage'}
+                            }
+                          },
+                          bar: { groupWidth: "70%" }
+                        };
+
+                        var chart = new google.visualization.BarChart(document.getElementById('chart_div{{ currentQuestion }}'));
+                        chart.draw(data, options);
+                      }
+
+
+            </script>
+
+            <a>
+                <div class="section center white" id="chart_div{{ currentQuestion }}"></div>
+            </a>
+            {% elif question.type == 5 %}
+            <img class="white" src="{{ url_for('static',filename='images/time_answer.svg') }}">
+            <script type="text/javascript">
+
+                        google.charts.load('current', {'packages':['timeline']});
+                        google.charts.setOnLoadCallback(drawChart);
+
+                        function drawChart() {
+                          var data = google.visualization.arrayToDataTable([
+                            ['User', 'Start Time', 'End Time'],
+                            {% for a in answerList[loop.index0] %}
+                                ['User',
+                                new Date(2014, 10, 15, {{ a[0] }}, {{ a[1] }}),
+                                new Date(2014, 10, 15, {{ a[0] }}, {{ a[1] }})],
+                            {% endfor %}
+                          ]);
+
+
+                          var options = {
+                            'width':1000,
+                            'height':300
+                          };
+
+                          var chart = new google.visualization.Timeline(document.getElementById('chart_div{{ currentQuestion }}'));
+
+                          chart.draw(data, options);
+                        }
+
+
+            </script>
+
+            <a>
+                <div class="section center white" id="chart_div{{ currentQuestion }}"></div>
+            </a>
+            {% elif question.type == 6 %}
+            <img class="white" src="{{ url_for('static',filename='images/liking_answer.svg') }}">
+            <a>
+                <div class="section center white">
+                    <h6  class="center  black-text">{{ answerList[loop.index0][2] }}</h6>
+                    <p class="range-field">
+                        <input id="range{{ currentQuestion }}" type="range" disabled="true" min="{{ answerList[loop.index0][0] }}"
+                               max="{{ answerList[loop.index0][1] }}" value="{{ answerList[loop.index0][2] }}"/>
+                        <label for="range{{ currentQuestion }}" class="left black-text">{{ answerList[loop.index0][0] }}</label>
+                        <label for="range{{ currentQuestion }}" class="right black-text">{{ answerList[loop.index0][1] }}</label>
+                    </p>
+                </div>
+            </a>
+            {% endif %}
+
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="right">
+            <a href="/profile/analytics"
+               class="btn-small waves-effect waves-light orange darken-2 purple-text text-darken-4 right">
+                Analytics<i class="material-icons left">keyboard_backspace</i>
+            </a>
+        </div>
+        <br>
+        <br>
+    </form>
+</div>
+
+<br>
+{% endblock %}
